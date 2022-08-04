@@ -18,9 +18,6 @@ class AuthorAdminOrRead(permissions.BasePermission):
 
 
 class IsAuthenticatedOrReadOnlyPost(permissions.BasePermission):
-    """
-    The request is authenticated as a user, or is a read-only request.
-    """
 
     def has_permission(self, request, view):
         return bool(
