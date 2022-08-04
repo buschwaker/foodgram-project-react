@@ -1,6 +1,5 @@
-from django.db import models
 from django.core.validators import MinValueValidator
-
+from django.db import models
 from users.models import MyUser
 
 
@@ -10,13 +9,13 @@ class Ingredient(models.Model):
         max_length=15, verbose_name='Единица измерения'
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = 'Ингредиенты'
         verbose_name = 'Ингредиент'
         ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Tag(models.Model):
@@ -28,12 +27,12 @@ class Tag(models.Model):
     )
     slug = models.SlugField(max_length=50, unique=True)
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = 'Теги'
         verbose_name = 'Тег'
+
+    def __str__(self):
+        return self.name
 
 
 class IngredientAmount(models.Model):
@@ -74,13 +73,13 @@ class Recipe(models.Model):
         auto_now_add=True
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = 'Рецепты'
         verbose_name = 'Рецепт'
         ordering = ['-pub_date']
+
+    def __str__(self):
+        return self.name
 
 
 class Favourite(models.Model):
@@ -97,10 +96,6 @@ class Favourite(models.Model):
         related_name='favourites',
     )
 
-    def __str__(self):
-        return (f'{self.user.username} added'
-                f' to favourites {self.recipe.name}')
-
     class Meta:
         ordering = ['user']
         constraints = [
@@ -110,6 +105,10 @@ class Favourite(models.Model):
         ]
         verbose_name_plural = 'Избранные'
         verbose_name = 'Избранное'
+
+    def __str__(self):
+        return (f'{self.user.username} added'
+                f' to favourites {self.recipe.name}')
 
 
 class Cart(models.Model):
@@ -126,9 +125,6 @@ class Cart(models.Model):
         related_name='carts',
     )
 
-    def __str__(self):
-        return f'{self.user.username} gonna buy: {self.recipe.name}'
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -138,3 +134,6 @@ class Cart(models.Model):
         ordering = ['user']
         verbose_name_plural = 'Покупки'
         verbose_name = 'Покупка'
+
+    def __str__(self):
+        return f'{self.user.username} gonna buy: {self.recipe.name}'

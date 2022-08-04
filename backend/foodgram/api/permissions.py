@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class AuthorAdminOrReadOnly(permissions.BasePermission):
+class AuthorAdminOrRead(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return bool(
@@ -17,7 +17,7 @@ class AuthorAdminOrReadOnly(permissions.BasePermission):
         return False
 
 
-class IsAuthenticatedOrReadOnlyOrPost(permissions.BasePermission):
+class IsAuthenticatedOrReadOnlyPost(permissions.BasePermission):
     """
     The request is authenticated as a user, or is a read-only request.
     """

@@ -1,10 +1,9 @@
 from django.conf import settings
 from django.contrib import admin
+from recipes import models
 
-from .models import Ingredient, Tag, Recipe, IngredientAmount, Favourite, Cart
 
-
-@admin.register(Ingredient)
+@admin.register(models.Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -14,7 +13,7 @@ class IngredientAdmin(admin.ModelAdmin):
     empty_value_display = settings.EMPTY_VALUE_DISPLAY
 
 
-@admin.register(Tag)
+@admin.register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -28,7 +27,7 @@ class TagAdmin(admin.ModelAdmin):
     empty_value_display = settings.EMPTY_VALUE_DISPLAY
 
 
-@admin.register(Recipe)
+@admin.register(models.Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -46,7 +45,7 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = settings.EMPTY_VALUE_DISPLAY
 
 
-@admin.register(Favourite)
+@admin.register(models.Favourite)
 class FavouriteAdmin(admin.ModelAdmin):
     list_display = (
         'user',
@@ -54,7 +53,7 @@ class FavouriteAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Cart)
+@admin.register(models.Cart)
 class CartAdmin(admin.ModelAdmin):
     list_display = (
         'user',
@@ -62,7 +61,7 @@ class CartAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(IngredientAmount)
+@admin.register(models.IngredientAmount)
 class IngredientAmountAdmin(admin.ModelAdmin):
     list_display = (
         'ingredient',

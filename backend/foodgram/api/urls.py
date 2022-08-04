@@ -1,10 +1,7 @@
+from api import views
 from django.urls import include, path
-from rest_framework import routers
 from djoser.views import TokenCreateView, TokenDestroyView
-
-
-from .views import (UserViewSet, IngredientsView, TagsView, RecipeView,
-                    FavouriteView, FollowView, CartView)
+from rest_framework import routers
 
 app_name = 'api'
 
@@ -17,7 +14,7 @@ class NoPutRouter(routers.DefaultRouter):
 
         bound_methods = super().get_method_map(viewset, method_map)
 
-        if 'put' in bound_methods.keys():
+        if 'put' in bound_methods:
             del bound_methods['put']
 
         return bound_methods
@@ -25,10 +22,10 @@ class NoPutRouter(routers.DefaultRouter):
 
 router_v1 = NoPutRouter()
 
-router_v1.register('users', UserViewSet, basename='user')
-router_v1.register('ingredients', IngredientsView, basename='ingredient')
-router_v1.register('tags', TagsView, basename='tag')
-router_v1.register('recipes', RecipeView, basename='recipe')
+router_v1.register('users', views.UserViewSet, basename='user')
+router_v1.register('ingredients', views.IngredientsView, basename='ingredient')
+router_v1.register('tags', views.TagsView, basename='tag')
+router_v1.register('recipes', views.RecipeView, basename='recipe')
 
 
 urlpatterns = [
@@ -45,17 +42,17 @@ urlpatterns = [
     ),
     path(
         'recipes/<int:recipe_id>/favorite/',
-        FavouriteView.as_view(),
+        views.FavouriteView.as_view(),
         name='add_delete_favourites'
     ),
     path(
         'recipes/<int:recipe_id>/shopping_cart/',
-        CartView.as_view(),
+        views.CartView.as_view(),
         name='add_delete_recipes_from_cart'
     ),
     path(
         'users/<int:user_id>/subscribe/',
-        FollowView.as_view(),
+        views.FollowView.as_view(),
         name='add_delete_subscriptions'
     )
 ]

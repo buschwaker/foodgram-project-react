@@ -10,7 +10,8 @@ services:
 
 
   backend:
-    image: akroshko1995/foodgram:v0.0.1
+#    image: akroshko1995/foodgram:v0.0.1
+    build: ../backend/foodgram/
     restart: always
     volumes:
       # Контейнер web будет работать с данными, хранящиеся в томе static_value,
