@@ -2,11 +2,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from users.models import Follow, MyUser
+from users.models import Follow, User
 
 
-@admin.register(MyUser)
-class MyUserAdmin(UserAdmin):
+@admin.register(User)
+class UserAdminCustom(UserAdmin):
     """Панель администратора для модели MyUser"""
     fieldsets = (
         (None, {'fields': ('username', 'password', 'is_staff')}),

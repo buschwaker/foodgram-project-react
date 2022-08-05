@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from users.models import MyUser
+from users.models import User
 
 
 class Ingredient(models.Model):
@@ -50,7 +50,7 @@ class IngredientAmount(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        MyUser, on_delete=models.CASCADE, verbose_name='Пользователь',
+        User, on_delete=models.CASCADE, verbose_name='Пользователь',
         related_name='recipes'
     )
     ingredients = models.ManyToManyField(
@@ -85,7 +85,7 @@ class Recipe(models.Model):
 
 class Favourite(models.Model):
     user = models.ForeignKey(
-        MyUser,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
         related_name='favourites',
@@ -114,7 +114,7 @@ class Favourite(models.Model):
 
 class Cart(models.Model):
     user = models.ForeignKey(
-        MyUser,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
         related_name='carts',

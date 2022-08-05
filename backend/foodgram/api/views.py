@@ -14,12 +14,12 @@ from api.mixins import CreateRetrieveListViewSet
 from api.paginators import LimitPagePaginator
 from api.permissions import AuthorAdminOrRead, IsAuthenticatedOrReadOnlyPost
 from recipes import models
-from users.models import Follow, MyUser
+from users.models import Follow, User
 
 
 class UserViewSet(CreateRetrieveListViewSet):
     lookup_field = 'id'
-    queryset = MyUser.objects.all()
+    queryset = User.objects.all()
     pagination_class = LimitPagePaginator
     permission_classes = (IsAuthenticatedOrReadOnlyPost, )
 
@@ -178,7 +178,7 @@ class FollowView(CustomDeletePost):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def post(self, request, user_id):
-        user_to_follow = get_object_or_404(MyUser, id=user_id)
+        user_to_follow = get_object_or_404(User, id=user_id)
         dict_to_return = self.custom_post(
             request, user_id,
             serializers.FollowSerializer, {'author': user_to_follow}
@@ -188,7 +188,7 @@ class FollowView(CustomDeletePost):
         )
 
     def delete(self, request, user_id):
-        user_to_unfollow = get_object_or_404(MyUser, id=user_id)
+        user_to_unfollow = get_object_or_404(User, id=user_id)
         return self.custom_delete(
             Follow, request, {'author': user_to_unfollow}
         )

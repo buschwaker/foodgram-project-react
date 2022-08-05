@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class MyUser(AbstractUser):
+class User(AbstractUser):
     """Модель MyUser.
     При аутентификации в качестве логина используется email.
     """
@@ -24,13 +24,13 @@ class MyUser(AbstractUser):
 
 class Follow(models.Model):
     user = models.ForeignKey(
-        MyUser,
+        User,
         on_delete=models.CASCADE,
         related_name='follower',
         verbose_name='Подписчик',
     )
     author = models.ForeignKey(
-        MyUser,
+        User,
         on_delete=models.CASCADE,
         related_name='following',
         verbose_name='Автор',

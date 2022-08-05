@@ -1,10 +1,10 @@
 from django.contrib.auth.password_validation import validate_password
-from django.shortcuts import Http404, get_object_or_404
+from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes import models
-from users.models import Follow, MyUser
+from users.models import Follow, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         ).exists()
 
     class Meta:
-        model = MyUser
+        model = User
         fields = (
             'id', 'email', 'username', 'first_name', 'last_name',
             'is_subscribed', 'password'
@@ -89,7 +89,7 @@ class UserSerializerAnonymous(serializers.ModelSerializer):
         return user
 
     class Meta:
-        model = MyUser
+        model = User
         fields = (
             'id', 'email', 'username', 'first_name', 'last_name', 'password'
         )
@@ -147,45 +147,42 @@ class RecipeSerializer(RecipeSerializerGet):
 
     def validate(self, data):
         for data_ingredient in data['ingredients']:
-            try:
-                get_object_or_404(
-                    models.Ingredient, pk=data_ingredient['ingredient']['id']
-                )
-            except Http404:
+            get_object_or_404(
+                models.Ingredient, pk=data_ingredient['ingredient']['id'])
+            if data['ingredients'].count(data_ingredient) > 1:
                 raise serializers.ValidationError(
-                    f'Нет ингредиента'
-                    f' id = {data_ingredient["ingredient"]["id"]}'
+                    'Один и тот же ингредиент'
+                    ' в данном запросе встречается дважды!'
                 )
         if len(data['tags']) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен включать хотя бы 1 тег'
             )
+        for tag in data['tags']:
+            if data['tags'].count(tag) > 1:
+                raise serializers.ValidationError(
+                    'Один и тот же тег в данном запросе встречается дважды!'
+                )
         return data
 
-    def get_data_for_post_and_update(self):
-        validated_ingredients = self.validated_data.get('ingredients')
+    @staticmethod
+    def get_data_for_post_and_update(validated_data):
+        validated_ingredients = validated_data.get('ingredients')
         ingredients_list = []
         if validated_ingredients:
             for ingredient in validated_ingredients:
                 ing_id = models.Ingredient.objects.get(
                     pk=ingredient['ingredient']['id']
                 )
-                try:
-                    ingredient_recipe = get_object_or_404(
-                        models.IngredientAmount,
-                        ingredient=ing_id,
-                        amount=ingredient['amount']
-                    )
-                except Http404:
-                    ingredient_recipe = models.IngredientAmount.objects.create(
-                        ingredient=ing_id, amount=ingredient['amount']
-                    )
+                ingredient_recipe, created = (
+                    models.IngredientAmount.objects.get_or_create(
+                        ingredient=ing_id, amount=ingredient['amount'])
+                )
                 ingredients_list.append(ingredient_recipe)
         return ingredients_list or None
 
     def create(self, validated_data):
-
-        ingredients = self.get_data_for_post_and_update()
+        ingredients = self.get_data_for_post_and_update(validated_data)
         tags = validated_data.pop('tags')
         validated_data.pop('ingredients')
         validated_data.update({'author': self.context['request'].user})
@@ -195,7 +192,7 @@ class RecipeSerializer(RecipeSerializerGet):
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients = self.get_data_for_post_and_update()
+        ingredients = self.get_data_for_post_and_update(validated_data)
         tags = validated_data.pop('tags')
         validated_data.pop('ingredients')
         validated_data.update({'author': self.context['request'].user})
@@ -226,7 +223,7 @@ class SubscriptionsSerializer(UserSerializer):
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = MyUser
+        model = User
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name', 'recipes',
             'recipes_count', 'is_subscribed'
@@ -265,8 +262,8 @@ class FavouriteSerializer(serializers.ModelSerializer):
         source='recipe.cooking_time', read_only=True
     )
 
-    def custom_validation(self, klass, attrs):
-        if klass.objects.filter(
+    def validate(self, attrs):
+        if self.Meta.model.objects.filter(
                 user=self.context['request'].user, recipe=self.context['pk']
         ).exists():
             raise serializers.ValidationError(
@@ -275,20 +272,12 @@ class FavouriteSerializer(serializers.ModelSerializer):
             )
         return attrs
 
-    def validate(self, attrs):
-        self.custom_validation(models.Favourite, attrs)
-        return attrs
-
     class Meta:
         model = models.Favourite
-        fields = ('id', 'user', 'cooking_time', 'name', 'image')
+        fields = ('id', 'user', 'cooking_time', 'name', 'image',)
 
 
 class CartSerializer(FavouriteSerializer):
-
-    def validate(self, attrs):
-        self.custom_validation(models.Cart, attrs)
-        return attrs
 
     class Meta:
         model = models.Cart
@@ -309,12 +298,12 @@ class FollowSerializer(serializers.ModelSerializer):
             )
         if Follow.objects.filter(
                 user=self.context['request'].user,
-                author=MyUser.objects.get(pk=self.context['pk'])
+                author=User.objects.get(pk=self.context['pk'])
         ).exists():
             raise serializers.ValidationError(
                 "Нельзя дважды подписаться на одного и того же пользователя"
             )
-        if not MyUser.objects.filter(pk=self.context['pk']).exists():
+        if not User.objects.filter(pk=self.context['pk']).exists():
             raise serializers.ValidationError('Нет юзера с таким id!')
         return attrs
 
