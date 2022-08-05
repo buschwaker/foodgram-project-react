@@ -1,18 +1,19 @@
 from io import StringIO
 
+from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from api import serializers
 from api.filters import IngredientSearchCustom, RecipeFilterCustom
 from api.mixins import CreateRetrieveListViewSet
 from api.paginators import LimitPagePaginator
 from api.permissions import AuthorAdminOrRead, IsAuthenticatedOrReadOnlyPost
-from django.db.models import Sum
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from recipes import models
-from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from users.models import Follow, MyUser
 
 
@@ -150,7 +151,9 @@ class CustomDeletePost(APIView):
 
     @staticmethod
     def custom_delete(klass, request, kwargs):
-        return get_object_or_404(klass, user=request.user, **kwargs)
+        obj = get_object_or_404(klass, user=request.user, **kwargs)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FavouriteView(CustomDeletePost):
@@ -166,11 +169,9 @@ class FavouriteView(CustomDeletePost):
 
     def delete(self, request, recipe_id):
         recipe = get_object_or_404(models.Recipe, id=recipe_id)
-        favour = self.custom_delete(
+        return self.custom_delete(
             models.Favourite, request, {'recipe': recipe}
         )
-        favour.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FollowView(CustomDeletePost):
@@ -188,11 +189,9 @@ class FollowView(CustomDeletePost):
 
     def delete(self, request, user_id):
         user_to_unfollow = get_object_or_404(MyUser, id=user_id)
-        sub = self.custom_delete(
+        return self.custom_delete(
             Follow, request, {'author': user_to_unfollow}
         )
-        sub.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CartView(CustomDeletePost):
@@ -206,6 +205,4 @@ class CartView(CustomDeletePost):
 
     def delete(self, request, recipe_id):
         recipe = get_object_or_404(models.Recipe, id=recipe_id)
-        item = self.custom_delete(models.Cart, request, {'recipe': recipe})
-        item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.custom_delete(models.Cart, request, {'recipe': recipe})

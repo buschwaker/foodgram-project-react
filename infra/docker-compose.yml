@@ -10,17 +10,11 @@ services:
 
 
   backend:
-#    image: akroshko1995/foodgram:v0.0.1
-    build: ../backend/foodgram/
+    image: akroshko1995/foodgram:v0.0.1
     restart: always
     volumes:
-      # Контейнер web будет работать с данными, хранящиеся в томе static_value,
-      # через свою директорию /app/static/
       - backend_static_value:/app/static/
-      # Данные, хранящиеся в томе media_value, будут доступны в контейнере web
-      # через директорию /app/media/
       - backend_media_value:/app/media/
-    # «зависит от»,
     depends_on:
       - db
     env_file:
